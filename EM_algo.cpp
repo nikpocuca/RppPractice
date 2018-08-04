@@ -4,7 +4,6 @@
 #include <cstdlib>
 #include <ctime>
 #include <cassert>
-#include <cmath>
 #include <Rcpp.h>
 #include "element_wise.h"
 // [[Rcpp::depends(RcppArmadillo)]]
@@ -27,37 +26,37 @@ void labelEMCpp(arma::vec X) {
   
   arma::mat pi_o(2,X.size());
   
-  double mu_init_1 = 2; 
-  double mu_init_2 = -2; 
-  double sig_init_1 = 1; 
-  double sig_init_2 = 1; 
+  long double mu_init_1 = 2; 
+  long double mu_init_2 = -2; 
+  long double sig_init_1 = 1; 
+  long double sig_init_2 = 1; 
   
-  double pi_1 = 0.5; 
-  double pi_2 = 1 - pi_1; 
+  long double pi_1 = 0.5; 
+  long double pi_2 = 1 - pi_1; 
   
   arma::vec pxA = arma::vec(X.size()); 
   arma::vec pxB = arma::vec(X.size());
   
-  double muA = mu_init_1; 
-  double muB = mu_init_2; 
-  double sig_1 = sig_init_1;
-  double sig_2 = sig_init_2; 
+  long double muA = mu_init_1; 
+  long double muB = mu_init_2; 
+  long double sig_1 = sig_init_1;
+  long double sig_2 = sig_init_2; 
   
-  double var_1;
-  double var_2;
+  long double var_1;
+  long double var_2;
   
   arma:vec log_lik = arma::vec(2); 
   
   log_lik[0] = 0;
   
   for (int i; i < X.size(); i++ ){
-    pxA[i] = R::dnorm(X[i],muA,sig_1,FALSE); 
-    pxB[i] = R::dnorm(X[i],muB,sig_2,FALSE);
+    pxA[i] = R::dnorm(X[i],muA,sig_1,TRUE); 
+    pxB[i] = R::dnorm(X[i],muB,sig_2,TRUE);
   }
   
-  log_lik[1] = -log(prod((pi_1 * pxA + pi_2 * pxB)));
+  log_lik[1] = -sum(log((pi_1 * pxA + pi_2 * pxB)));
   
-  double diff = abs(log_lik[1] - log_lik[0]); 
+  long double diff = abs(log_lik[1] - log_lik[0]); 
   
   int count = 0; 
   
@@ -74,10 +73,10 @@ void labelEMCpp(arma::vec X) {
     arma::vec denom = (num_1 + num_2); 
     
     arma::vec zi_1 = num_1 / denom;
-    arma::vec zi_2 = 1 - zi_1; 
+    arma::vec zi_2 = 1 - zi_1; E
     
     // M Step 
-    pi_1 = mean(zi_1); 
+    pi_1 = mean(zi_1);  
     pi_2 = 1 - pi_1;
     
     // Calculate New means
@@ -89,12 +88,12 @@ void labelEMCpp(arma::vec X) {
     var_1 = sum(zi_1.t() * element_wise_power((X-muA),2)) / sum(zi_1);
     var_2 = sum(zi_2.t() * element_wise_power((X-muB),2)) / sum(zi_2);
     
-    sig_1 =  std::sqrt((double)var_1);
-    sig_2 = std::sqrt((double)var_2);
+    sig_1 =  std::sqrt(var_1);
+    sig_2 = std::sqrt(var_2);
     
     log_lik[0] = log_lik[1];
     
-    log_lik[1] = -log(prod((pi_1 * pxA + pi_2 * pxB)));
+    log_lik[1] = -sum(log((pi_1 * pxA + pi_2 * pxB)));
     
     
     diff = abs(log_lik[1] - log_lik[0]); 
@@ -115,7 +114,7 @@ void labelEMCpp(arma::vec X) {
 
 
 /***R
-test <- c(rnorm(10000,10,1),rnorm(10000,-3,1))
+test <- c(rnorm(10000,2,1),rnorm(10000,4,1))
 labelEMCpp(X = test)
 # it works !
 */
