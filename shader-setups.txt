@@ -1,0 +1,21 @@
+# Setup for MacOSX 
+
+First install X11, 
+
+# Then install cairo from source but with a flag for X11
+brew install cairo --with-x11
+
+# Then install pkg-config and configure
+brew install pkg-config
+pkg-config cairo --cflags
+
+
+# Then generate a .R directory, with a file called 'Makevars' 
+# add the following lines 
+CC=clang
+CXX=clang++ -std=gnu++11
+PKG_CFLAGS= -g -O2
+
+
+# Now install all the R packages needed, Cairo, gdal, imager, etc. 
+
